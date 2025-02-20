@@ -1,0 +1,42 @@
+---
+title: "ESS Lab 3"
+format: html
+editor: visual
+---
+
+Question 1:```
+library(tidyverse); library(flextable)
+data = read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv')
+covid_data = data
+
+Question 2:
+text = date("2022-01-01")
+my.date <- as.Date(text)
+class(my.date)
+my.state= "Colorado"
+Colorado_data = covid_data |>
+  filter(state == my.state)|>
+  group_by(county)|>
+  arrange(date)|>
+  mutate(new_cases = cases - lag(cases))|>
+  mutate(new_deaths = deaths - lag(deaths))|>
+  ungroup()
+Colorado_data|>
+  filter(date == my.date)|>
+  slice_max(cases, n=5) |>
+  select(Date = date, County = county, Cases = cases) |>
+  flextable() |>
+  set_caption("Most Total Cases")
+View(Cumulative_Colorado_cases)
+Colorado_data|>
+  filter(date == my.date)|>
+  slice_max(cases, n=5) |>
+  select(Date = date, County = county, Cases = new_cases) |>
+  flextable() |>
+  set_caption("Most New Cases")
+pop_data = read_csv('https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv')
+Question 3: 
+pop_data|>
+  as.character()
+```
+
