@@ -1,0 +1,47 @@
+---
+title: "Zimbelman_Daily_Assignment"
+output: html_document
+date: "2025-03-03"
+---
+
+i
+```{r}
+
+'
+library(visdat)
+library(broom) 
+
+airquality
+
+#visdat(airquality)
+
+#the data needs cleaning...
+airquality_clean =  airquality |>
+filter(!is.na("ozone"))
+airquality_clean
+
+air_quality_model = airquality
+  air_quality_model <- lm(Ozone = Month, data = airquality)
+air_quality_summary = summary(air_quality_model)
+air_quality_summary
+
+###in summary it shows that the lowest p values for this dataset are in Wind, Temp and Solar.R, this means that there is the highest probability of correlation with these and we should do our analysis with thsese variables. However, our intercept is -43. which means this model might not be vald, but all the variables have a low standard error which gives confidence in the accuracy of our model. We also got an r squared value of around 0.3567 which means that only around a 3rd of variance is explained by the model which isnt very good and it could mean that this isnt valid. But we move forward. 
+c = tidy(air_quality_summary, conf.int = TRUE)
+a = airquality_clean
+  
+augment(air_quality_model, airquality)
+predidted_ozone = predict("ozone" , airqualityl)
+airquality_distinct|>
+  ggplot(aes(x = Solar.R, y = Ozone)) +
+  geom_line()
+
+ggplot(airquality_clean, aes(x = Solar.R, y = Ozone)) +
+  geom_line() 
+
+project:
+  title: "ess 330 daily excersises"
+  output-dir
+  
+'
+
+```
