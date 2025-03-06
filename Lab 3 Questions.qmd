@@ -5,11 +5,13 @@ editor: visual
 ---
 
 ##Question 1:```
+```{r}
 library(tidyverse); library(flextable)
 data = read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv')
 covid_data = data
-
+```
 ##Question 2:
+```{r}
 text = date("2021-02-01")
 my.date <- as.Date(text)
 class(my.date)
@@ -34,9 +36,10 @@ Colorado_data|>
   select(Date = date, County = county, Cases = new_cases) |>
   flextable() |>
   set_caption("Most New Cases")
-pop_data = read_csv('https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv')
+```
 ##Question 3: 
-
+```{r}
+pop_data = read_csv('https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv')
 sprintf("%02s", (pop_data$STATE) , "%03s", (pop_data$COUNTY))
 
   fip_code = paste(pop_data$STATE, pop_data$COUNTY, sel =" ")
@@ -59,7 +62,7 @@ POP_data = POP_data|>
   rename('fips' = 'fip')
 #range = 737287 - 741 = 736546
 Covid_Population_Data = inner_join(POP_data,Colorado_data, by = 'fips')
-new_data = joined_data |>
+new_data = Covid_Population_Data |>
   group_by(date)|>
   select(date = date, County = county, Cases = cases, Population = POPESTIMATE2021, Deaths = deaths, New_Cases = new_cases, New_Deaths = new_deaths)|>
   na.omit(New_cases , New_Deaths)|>
@@ -73,9 +76,9 @@ flex_table_new <-new_data|>
   slice_max(Per_capita_cum, n = 5)|>
   flextable::flextable()|>
    flextable::set_caption('5 Highest Cumulative Covid Cases Per Capita in Colorado Counties')
-flex_table <- set_header_labels(flex_table, date = "Date",
+flex_table_new <- set_header_labels(flex_table_new, date = "Date",
                     Per_capita_cum = "Cumulative Population")
-
+flex_table_new
 new_flex_table <- new_data|>
   filter(date == my.date)|>
   select(date,County,Per_capita_new_case)|>
@@ -87,7 +90,7 @@ new_flex_table <- set_header_labels(new_flex_table, date = "Date",
 new_flex_table
 view(new_flex_table)
 new_flex_table
-
+```
 ##Question 4 
 ```{r}
 
@@ -97,16 +100,80 @@ new_flex_table
     filter(date >= (max(date - 14)))|>
     select(county,date,new_cases,POPESTIMATE2021)|>
     group_by(county)|>
-    mutate(POPESTIMATE2021 = (sum(POPESTIMATE2021)/14)/100000)|>
+   mutate(POPESTIMATE2021 = rollmean((POPESTIMATE2021/100000), k = 13))|>
     summarise(new_cases = sum((new_cases)/POPESTIMATE2021))|>
     slice_max(new_cases, n= 5) |>
     flextable::flextable() |>
     flextable::set_caption('Watch List Covid Counties')
  Watchlist_flextable <- set_header_labels(Watchlist_flextable, county = 'County', new_cases = 'New Cases')
+Watchlist_flextable
 ```
 ##Question 5 
 ```{r}
-  Covid_Population_Data|>
-    date = as.date(2022-02-01)
+  death_date = as.Date("2022-01-30")
+  year = lubridate::year(death_date)
+
+  desired_death_rate = Covid_Population_Data |>
+  filter( '2020-12-31' < date & date < '2022-01-01')|>
+  select(cases,county,date,DEATHS2021,deaths)|>
+  group_by(county)|>
+  mutate(death_rate = 100*(sum(deaths)/sum(DEATHS2021)))|>
+  filter(death_rate >= 20)|>
+  summarise(death_rate,county,date)
+ 
+    
+desired_death_rate |>
+   ggplot(aes(y = death_rate)) +
+   facet_wrap("county") +
+  geom_bar(aes(color = county))
+
+    
+  
 ```
+##Question 6 
+
+
+```{r}
+daily_new_cases = covid_data |>
+  group_by(date,state)|>
+  summarise(cases = sum(cases)) |>
+  filter(state %in% c("New York", "Ohio", "Colorado", "Alabama"))|>
+  group_by(state) |>
+  mutate(new_cases = cases - lag(cases),
+         roll = zoo::rollmean(new_cases, k = 7, align = "right", fill= NA))|>
+  ungroup()
+  
+
+
+  
+daily_new_cases |>
+    ggplot(aes(x = date))+ 
+    geom_col(aes(y = new_cases), fill = "pink", col = NA) +
+    geom_line(aes(y = roll), col = "red") +
+    facet_wrap(~state, nrow = 2, scales = "free_y") +
+      labs(title = "Cumulative COVID-19 Cases",
+           x = "Date", y = "Case Count")
+
+  
+pp = pop_data |>
+  group_by(STNAME)|>
+  summarise(state_pop = sum(POPESTIMATE2021)) |>
+    inner_join(state_data, by = c("STNAME" = "state"))|>
+  mutate(perCap = new_cases / state_pop)|>
+  group_by(STNAME) |>
+  mutate(roll = zoo::rollmean(perCap, k = 7, align = "right", fill = NA)) |>
+  ungroup()
+
+ggplot(pp, aes(x = date)) +
+  geom_line(aes( y = roll, col= STNAME),
+            size = 1) +
+  theme_linedraw() + 
+  labs(title = "Cumulative COVID-19 Cases",
+       x = "Date", y = "Case Count")
+  
+
+```
+
+##Question 7 
+```{r}
 
