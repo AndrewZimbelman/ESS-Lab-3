@@ -12,7 +12,7 @@ covid_data = data
 ```
 ##Question 2:
 ```{r}
-text = date("2021-02-01")
+text = as.Date("2021-02-01")
 my.date <- as.Date(text)
 class(my.date)
 my.state= "Colorado"
@@ -32,8 +32,8 @@ Colorado_data|>
 View(Cumulative_Colorado_cases)
 Colorado_data|>
   filter(date == my.date)|>
-  slice_max(new_cases, n=5) |>
-  select(Date = date, County = county, Cases = new_cases) |>
+  select(Date = date, County = county, new_cases) |>
+  slice_max(new_cases, n = 5) |>
   flextable() |>
   set_caption("Most New Cases")
 ```
@@ -100,7 +100,7 @@ new_flex_table
     filter(date >= (max(date - 14)))|>
     select(county,date,new_cases,POPESTIMATE2021)|>
     group_by(county)|>
-   mutate(POPESTIMATE2021 = rollmean((POPESTIMATE2021/100000), k = 13))|>
+   mutate(POPESTIMATE2021 = rollmean((POPESTIMATE2021/100000), k = 1))|>
     summarise(new_cases = sum((new_cases)/POPESTIMATE2021))|>
     slice_max(new_cases, n= 5) |>
     flextable::flextable() |>
@@ -126,7 +126,8 @@ desired_death_rate |>
    ggplot(aes(x= county ,y = death_rate)) +
   geom_col(aes(color = county)) +
   labs(title= "Counties with 20% or Higher death rate from COVID-19",
-       y = "death_rate")
+       y = "Death_Rate",
+       x = "County")
 
     
   
@@ -176,7 +177,8 @@ ggplot(pp, aes(x = date)) +
 ```
 
 ##Question 7 
-map_data = county_cen |>
+```{r}
+map_data = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv') %>%
   inner_join(covid_data, by = "fips")|>
   group_by(date)|>
   summarise(wmX_c = sum(LON*cases)/sum(cases),
@@ -193,7 +195,10 @@ ggplot(map_data)+
        x = "", y = "",
        title = "Weighted Center of COVID-19 Cases") +
   theme(legend_position = "none")
+```
+  
 ```{r}
+
 ggplot(map_data)+
   borders("state", fill = "gray90", color = "white")+
   geom_point(aes(x = wmX_c, y = wmY_c, size = cases), color = "red", alpha =.25) +
@@ -202,7 +207,10 @@ ggplot(map_data)+
        x = "", y = "",
        title = "Weighted Center of COVID-19 Cases") +
   theme(legend_position = "none")
+
 ```
+
+
 ##Question 8 
 ```{r}
 

@@ -1,0 +1,267 @@
+---
+title: "ESS Lab 3"
+format: html
+editor: visual
+---
+
+
+
+##Question 1:```
+
+
+```{r}
+library(tidyverse); library(flextable)
+data = read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv')
+covid_data = data
+```
+
+
+##Question 2:
+
+
+```{r}
+text = as.Date("2021-02-01")
+my.date <- as.Date(text)
+class(my.date)
+my.state= "Colorado"
+Colorado_data = covid_data |>
+  filter(state == my.state)|>
+  group_by(county)|>
+  arrange(date)|>
+  mutate(new_cases = cases - lag(cases))|>
+  mutate(new_deaths = deaths - lag(deaths))|>
+  ungroup()
+Colorado_data|>
+  filter(date == my.date)|>
+  slice_max(cases, n=5) |>
+  select(Date = date, County = county, Cases = cases) |>
+  flextable() |>
+  set_caption(caption = "Most Total Cases")
+
+Colorado_data|>
+  filter(date == my.date)|>
+  select(Date = date, County = county, new_cases) |>
+  slice_max(new_cases, n = 5) |>
+  flextable() |>
+  set_caption(caption = "Most New Cases")
+```
+
+
+##Question 3: 
+
+
+```{r}
+ pop_data =  read_csv('https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv')
+
+
+
+
+fips = paste0(pop_data$STATE, pop_data$COUNTY)
+POP_data = pop_data |>
+  select(contains("NAME") | contains("2021") |    contains("COUNTY"))|>
+  mutate(fips = fips)|>
+  filter(COUNTY > '000')
+  dim(POP_data)
+  #2. some of the common names are STNAME, CTYNAME,           DEATHS2021, with 3144 rows & 18 columns 
+  #range = 737287 - 741 = 736546
+  max(POP_data$POPESTIMATE2021)
+  min(POP_data$POPESTIMATE2021)
+ COVID_Population_Data = POP_data|>
+inner_join(Colorado_data, by = 'fips')
+  COVID_Data = COVID_Population_Data 
+  COVID_Data|>
+  group_by(CTYNAME)|>
+  select(date, county = CTYNAME,cases, Population = POPESTIMATE2021, deaths = deaths, new_cases, new_deaths)|>
+  filter(date == my.date)|>
+  na.omit(new_cases, new_deaths) |>
+  summarise( cases = (cases/Population), new_cases = (new_cases/Population), new_deaths,county,date)
+
+  
+  
+
+  COVID_Data |>  
+filter(date == my.date)|> 
+  select(county,cases)|>
+  arrange(-cases)|>
+  head(n = 5)|>
+  flextable() |>
+  set_caption(caption = "5 Highest Cumulative Covid Cases Per Capita in Colorado Counties")
+  COVID_Data |>
+  filter(date == my.date)|>
+  select(county,new_cases)|>
+  arrange(-new_cases)|>
+  head(n = 5)|>
+  flextable()|>
+  set_caption(caption = '5 Highest Counties for New Covid Cases Per Capita in Colorado')
+```
+
+
+##Question 4 
+
+
+```{r}
+
+Covid_Population_Data = POP_data %>%
+  inner_join(Colorado_data, by = "fips")
+
+Covid_Population_Data|>
+  filter(between(date, my.date - 13, my.date)) %>%
+  select(county = CTYNAME,state,cases,new_cases, POPESTIMATE2021,date) %>%
+  group_by(county)|>
+   summarise(lag = sum((new_cases) /                 ((POPESTIMATE2021/100000))),county,cases,new_cases,state,date)|>
+  distinct(lag)|>
+  ungroup()|>
+  filter(lag >= 100)|> 
+  select(County = county, Cases = lag) %>%
+  slice_max(Cases, n = 5) %>%
+  flextable() |>
+  set_caption(caption = 'Watch List Covid Counties')
+  
+  
+#There are 59 differnet counties that meet the watchlist criteria
+  
+```
+
+
+##Question 5 
+
+
+```{r}
+  death_date = as.Date("2022-01-30")
+  year = lubridate::year(death_date)
+
+  desired_death_rate = Covid_Population_Data |>
+  filter( '2020-12-31' < date & date < '2022-01-01')|>
+  select(cases,county,date,DEATHS2021,deaths)|>
+  group_by(county)|>
+  mutate(death_rate = 100*(sum(deaths)/sum(DEATHS2021)))|>
+  filter(death_rate >= 20)|>
+  summarise(death_rate,county,date)
+ 
+    
+desired_death_rate |>
+   ggplot(aes(x= county ,y = death_rate)) +
+  geom_col(aes(color = county)) +
+  labs(title= "Counties with 20% or Higher death rate from COVID-19",
+       y = "Death_Rate",
+       x = "County")
+
+    
+  
+```
+
+
+##Question 6 
+
+
+
+
+```{r}
+state_data = covid_data |>
+  group_by(date,state)|>
+  summarise(cases = sum(cases)) |>
+  filter(state %in% c("New York", "Ohio", "Colorado", "Alabama"))|>
+  group_by(state) |>
+  mutate(new_cases = cases - lag(cases),
+         roll = zoo::rollmean(new_cases, k = 7, align = "right", fill= NA))|>
+  ungroup()
+  
+
+
+
+ state_data |>
+    ggplot(aes(x = date))+ 
+    geom_col(aes(y = new_cases), fill = "pink", col = NA) +
+    geom_line(aes(y = roll), col = "red") +
+    facet_wrap(~state, nrow = 2, scales = "free_y") +
+      labs(title = "Cumulative COVID-19 Cases",
+           x = "Date", y = "Case Count")
+
+
+pp = pop_data |>
+  group_by(STNAME)|>
+  summarise(state_pop = sum(POPESTIMATE2021)) |>
+    inner_join(state_data, by = c("STNAME" = "state"))|>
+  mutate(perCap = new_cases / state_pop)|>
+  group_by(STNAME) |>
+  mutate(roll = zoo::rollmean(perCap, k = 7, align = "right", fill = NA)) |>
+  ungroup()
+
+ggplot(pp, aes(x = date)) +
+  geom_line(aes( y = roll, col= STNAME),
+            size = 1) +
+  theme_linedraw() + 
+  labs(title = "Cumulative COVID-19 Cases",
+       x = "Date", y = "Case Count")
+  
+
+```
+
+
+
+##Question 7 
+
+
+```{r}
+map_data = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv') %>%
+  inner_join(covid_data, by = "fips")|>
+  group_by(date)|>
+  summarise(wmX_c = sum(LON*cases)/sum(cases),
+wmY_c = sum(LAT*cases) / sum(cases),
+cases = sum(cases)) |>
+  arrange(date)|>
+  mutate(d = 1:n())
+
+ggplot(map_data)+
+  borders("state", fill = "gray90", color = "white")+
+  geom_point(aes(x = wmX_c, y = wmY_c, size = cases), color = "red", alpha =.25)
+  labs(color = "Time",
+       size = "Cases",
+       x = "", y = "",
+       title = "Weighted Center of COVID-19 Cases") +
+  theme(legend_position = "none")
+```
+
+
+
+
+
+##Question 8 
+
+
+```{r}
+county_cen = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv')
+
+
+  case_map_data = county_cen|>
+  inner_join(data, by = "fips") |>
+  group_by(state)|>
+  summarise(wmX_c= (sum(LON*cases)/sum(cases)), wmY_c = (sum(LAT*cases)/sum(cases)), wmX_d = (sum(LON*deaths) / sum(deaths)), wmY_d= (sum(LAT*deaths)/sum(deaths)),cases= sum(cases),deaths=sum(deaths), ratio = (sum(cases) / sum(deaths)),date)|>
+  arrange(date)|>
+  ungroup()
+
+  
+p1 <-ggplot(case_map_data) +
+  borders("state", fill = "grey90", color = "white")+
+    geom_point(aes(x = wmX_c, y = wmY_c, size = cases), color = "red", alpha = .25) +
+    labs(color = "Time",
+         x = "Longitude",
+         y = "Latitude",
+         size = "cases",
+         title = " Weighted Covid Cases in United States")
+
+p2 <-ggplot(case_map_data) +
+  borders("state", fill = "grey90", color = "white")+
+    geom_point(aes(x = wmX_d, y = wmY_d, size = deaths), color = "blue", alpha = .25) +
+    labs(color = "Time",
+         x = "Longitude",
+         y = "Latitude",
+         size = "deaths",
+         title = " Weighted Covid Deaths in United States")
+
+ p1
+ p2
+ p1|p2
+ #comparing the two maps, I see no difference. It could be a scale issue, or an issue with my code. It may be an issue with my code, becuase I did observe that the ratio by state is different in my table when dividing sum(cases) by sum(deaths). This means that areas that had a lower case/death ratio had more deaths per cases then other states. I just don't know why this trend didn't show up on my graphs. Kinda dissapointed it didn't show up it would've been cool to see :/
+```
+

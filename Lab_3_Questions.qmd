@@ -198,22 +198,39 @@ ggplot(map_data)+
 
 ##Question 8 
 ```{r}
+county_cen = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv')
 
-new_data = Covid_Population_Data |>
-  group_by(date)|>
-  select(date = date, County = county, Cases = cases, Population = POPESTIMATE2021, Deaths = deaths, New_Cases = new_cases, New_Deaths = new_deaths,STNAME,fips)|>
-  na.omit(New_cases , New_Deaths)|>
-  mutate(Per_capita_cum = (Cases/Population))|>
-  mutate(Per_capita_new_case = (New_Cases/Population))|>
-  mutate(Per_capita_new_deaths = (New_Deaths / Population))|>
+
+  case_map_data = county_cen|>
+  inner_join(data, by = "fips") |>
+  group_by(state)|>
+  summarise(wmX_c= (sum(LON*cases)/sum(cases)), wmY_c = (sum(LAT*cases)/sum(cases)), wmX_d = (sum(LON*deaths) / sum(deaths)), wmY_d= (sum(LAT*deaths)/sum(deaths)),cases= sum(cases),deaths=sum(deaths), ratio = (sum(cases) / sum(deaths)),date)|>
+  arrange(date)|>
   ungroup()
 
-  Colorado_map_data = county_cen|>
-  inner_join(weighted_cases, by = "fips")
-  inner_join(county_cen, by = "fips")
-  group_by(date)|>
-  summarise(case_weighted = sum(cases))
   
+p1 <-ggplot(case_map_data) +
+  borders("state", fill = "grey90", color = "white")+
+    geom_point(aes(x = wmX_c, y = wmY_c, size = cases), color = "red", alpha = .25) +
+    labs(color = "Time",
+         x = "Longitude",
+         y = "Latitude",
+         size = "cases",
+         title = " Weighted Covid Cases in United States")
+
+p2 <-ggplot(case_map_data) +
+  borders("state", fill = "grey90", color = "white")+
+    geom_point(aes(x = wmX_d, y = wmY_d, size = deaths), color = "blue", alpha = .25) +
+    labs(color = "Time",
+         x = "Longitude",
+         y = "Latitude",
+         size = "deaths",
+         title = " Weighted Covid Deaths in United States")
+
+ p1
+ p2
+ p1|p2
+ #comparing the two maps, I see no difference. It could be a scale issue, or an issue with my code. It may be an issue with my code, becuase I did observe that the ratio by state is different in my table when dividing sum(cases) by sum(deaths). This means that areas that had a lower case/death ratio had more deaths per cases then other states. I just don't know why this trend didn't show up on my graphs. Kinda dissapointed it didn't show up it would've been cool to see :/
 ```
 
 
