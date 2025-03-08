@@ -123,9 +123,10 @@ Watchlist_flextable
  
     
 desired_death_rate |>
-   ggplot(aes(y = death_rate)) +
-   facet_wrap("county") +
-  geom_bar(aes(color = county))
+   ggplot(aes(x= county ,y = death_rate)) +
+  geom_col(aes(color = county)) +
+  labs(title= "Counties with 20% or Higher death rate from COVID-19",
+       y = "death_rate")
 
     
   
@@ -175,5 +176,51 @@ ggplot(pp, aes(x = date)) +
 ```
 
 ##Question 7 
+map_data = county_cen |>
+  inner_join(covid_data, by = "fips")|>
+  group_by(date)|>
+  summarise(wmX_c = sum(LON*cases)/sum(cases),
+wmY_c = sum(LAT*cases) / sum(cases),
+cases = sum(cases)) |>
+  arrange(date)|>
+  mutate(d = 1:n())
+
+ggplot(map_data)+
+  borders("state", fill = "gray90", color = "white")+
+  geom_point(aes(x = wmX_c, y = wmY_c, size = cases), color = "red", alpha =.25)
+  labs(color = "Time",
+       size = "Cases",
+       x = "", y = "",
+       title = "Weighted Center of COVID-19 Cases") +
+  theme(legend_position = "none")
 ```{r}
+ggplot(map_data)+
+  borders("state", fill = "gray90", color = "white")+
+  geom_point(aes(x = wmX_c, y = wmY_c, size = cases), color = "red", alpha =.25) +
+  labs(color = "Time",
+       size = "Cases",
+       x = "", y = "",
+       title = "Weighted Center of COVID-19 Cases") +
+  theme(legend_position = "none")
+```
+##Question 8 
+```{r}
+
+new_data = Covid_Population_Data |>
+  group_by(date)|>
+  select(date = date, County = county, Cases = cases, Population = POPESTIMATE2021, Deaths = deaths, New_Cases = new_cases, New_Deaths = new_deaths,STNAME,fips)|>
+  na.omit(New_cases , New_Deaths)|>
+  mutate(Per_capita_cum = (Cases/Population))|>
+  mutate(Per_capita_new_case = (New_Cases/Population))|>
+  mutate(Per_capita_new_deaths = (New_Deaths / Population))|>
+  ungroup()
+
+  Colorado_map_data = county_cen|>
+  inner_join(weighted_cases, by = "fips")
+  inner_join(county_cen, by = "fips")
+  group_by(date)|>
+  summarise(case_weighted = sum(cases))
+  
+```
+
 
