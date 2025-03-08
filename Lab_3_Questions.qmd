@@ -1,5 +1,9 @@
 ---
 title: "ESS Lab 3"
+subtitle: 'ESS 330'
+author:
+   - name: Andrew Zimbelman
+     email: andrewrzimbelman2203@gmail.com
 format: html
 editor: visual
 ---
