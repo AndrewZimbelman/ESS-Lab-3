@@ -4,10 +4,7 @@ format: html
 editor: visual
 ---
 
-
-
-##Question 1:```
-
+##Question 1:\`\`\`
 
 ```{r}
 library(tidyverse); library(flextable)
@@ -15,9 +12,7 @@ data = read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/
 covid_data = data
 ```
 
-
 ##Question 2:
-
 
 ```{r}
 text = date("2021-02-01")
@@ -46,9 +41,7 @@ Colorado_data|>
   set_caption("Most New Cases")
 ```
 
-
-##Question 3: 
-
+##Question 3:
 
 ```{r}
 pop_data = read_csv('https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv')
@@ -104,9 +97,7 @@ view(new_flex_table)
 new_flex_table
 ```
 
-
-##Question 4 
-
+##Question 4
 
 ```{r}
 
@@ -125,9 +116,7 @@ new_flex_table
 Watchlist_flextable
 ```
 
-
-##Question 5 
-
+##Question 5
 
 ```{r}
   death_date = as.Date("2022-01-30")
@@ -151,11 +140,7 @@ desired_death_rate |>
   
 ```
 
-
-##Question 6 
-
-
-
+##Question 6
 
 ```{r}
 daily_new_cases = covid_data |>
@@ -181,4 +166,3 @@ state_data|>
 ```{r}
 
 ```
-
