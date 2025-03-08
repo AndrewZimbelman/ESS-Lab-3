@@ -4,13 +4,15 @@ format: html
 editor: visual
 ---
 
-##Question 1:```
+## Question 1:`
+``
 ```{r}
 library(tidyverse); library(flextable)
 data = read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv')
 covid_data = data
 ```
 ##Question 2:
+
 ```{r}
 text = as.Date("2021-02-01")
 my.date <- as.Date(text)
@@ -38,6 +40,7 @@ Colorado_data|>
   set_caption(caption = "Most New Cases")
 ```
 ##Question 3: 
+
 ```{r}
  pop_data =  read_csv('https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv')
 
@@ -54,10 +57,9 @@ POP_data = pop_data |>
   #range = 737287 - 741 = 736546
   max(POP_data$POPESTIMATE2021)
   min(POP_data$POPESTIMATE2021)
- COVID_Population_Data = POP_data|>
+ COVID_Data = POP_data|>
 inner_join(Colorado_data, by = 'fips')
-  COVID_Data = COVID_Population_Data 
-  COVID_Data|>
+  COVID_Data = COVID_Data|>
   group_by(CTYNAME)|>
   select(date, county = CTYNAME,cases, Population = POPESTIMATE2021, deaths = deaths, new_cases, new_deaths)|>
   filter(date == my.date)|>
@@ -83,6 +85,7 @@ filter(date == my.date)|>
   set_caption(caption = '5 Highest Counties for New Covid Cases Per Capita in Colorado')
 ```
 ##Question 4 
+
 ```{r}
 
 Covid_Population_Data = POP_data %>%
@@ -106,6 +109,7 @@ Covid_Population_Data|>
   
 ```
 ##Question 5 
+
 ```{r}
   death_date = as.Date("2022-01-30")
   year = lubridate::year(death_date)
@@ -130,7 +134,6 @@ desired_death_rate |>
   
 ```
 ##Question 6 
-
 
 ```{r}
 state_data = covid_data |>
@@ -174,6 +177,7 @@ ggplot(pp, aes(x = date)) +
 ```
 
 ##Question 7 
+
 ```{r}
 map_data = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv') %>%
   inner_join(covid_data, by = "fips")|>
@@ -197,6 +201,7 @@ ggplot(map_data)+
 
 
 ##Question 8 
+
 ```{r}
 county_cen = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv')
 
@@ -204,8 +209,7 @@ county_cen = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-3
   case_map_data = county_cen|>
   inner_join(data, by = "fips") |>
   group_by(state)|>
-  summarise(wmX_c= (sum(LON*cases)/sum(cases)), wmY_c = (sum(LAT*cases)/sum(cases)), wmX_d = (sum(LON*deaths) / sum(deaths)), wmY_d= (sum(LAT*deaths)/sum(deaths)),cases= sum(cases),deaths=sum(deaths), ratio = (sum(cases) / sum(deaths)),date)|>
-  arrange(date)|>
+  summarise(wmX_c= (sum(LON*cases)/sum(cases)), wmY_c = (sum(LAT*cases)/sum(cases)), wmX_d = (sum(LON*deaths) / sum(deaths)), wmY_d= (sum(LAT*deaths)/sum(deaths)),cases= sum(cases),deaths=sum(deaths))|>
   ungroup()
 
   
@@ -229,7 +233,8 @@ p2 <-ggplot(case_map_data) +
 
  p1
  p2
- p1|p2
+ library(patchwork)
+ (p1|p2)
  #comparing the two maps, I see no difference. It could be a scale issue, or an issue with my code. It may be an issue with my code, becuase I did observe that the ratio by state is different in my table when dividing sum(cases) by sum(deaths). This means that areas that had a lower case/death ratio had more deaths per cases then other states. I just don't know why this trend didn't show up on my graphs. Kinda dissapointed it didn't show up it would've been cool to see :/
 ```
 
