@@ -8,13 +8,16 @@ format: html
 editor: visual
 ---
 
-## Question 1:`
-``
+## Question 1:\`
+
+\`\`
+
 ```{r}
 library(tidyverse); library(flextable)
 data = read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv')
 covid_data = data
 ```
+
 ##Question 2:
 
 ```{r}
@@ -43,7 +46,8 @@ Colorado_data|>
   flextable() |>
   set_caption(caption = "Most New Cases")
 ```
-##Question 3: 
+
+##Question 3:
 
 ```{r}
  pop_data =  read_csv('https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/counties/totals/co-est2023-alldata.csv')
@@ -88,7 +92,8 @@ filter(date == my.date)|>
   flextable()|>
   set_caption(caption = '5 Highest Counties for New Covid Cases Per Capita in Colorado')
 ```
-##Question 4 
+
+##Question 4
 
 ```{r}
 
@@ -112,7 +117,8 @@ Covid_Population_Data|>
 #There are 59 differnet counties that meet the watchlist criteria
   
 ```
-##Question 5 
+
+##Question 5
 
 ```{r}
   death_date = as.Date("2022-01-30")
@@ -137,7 +143,8 @@ desired_death_rate |>
     
   
 ```
-##Question 6 
+
+##Question 6
 
 ```{r}
 state_data = covid_data |>
@@ -180,7 +187,7 @@ ggplot(pp, aes(x = date)) +
 
 ```
 
-##Question 7 
+##Question 7
 
 ```{r}
 map_data = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv') %>%
@@ -202,9 +209,7 @@ ggplot(map_data)+
   theme(legend_position = "none")
 ```
 
-
-
-##Question 8 
+##Question 8
 
 ```{r}
 county_cen = read_csv('https://raw.githubusercontent.com/mikejohnson51/csu-ess-330/refs/heads/main/resources/county-centroids.csv')
@@ -241,5 +246,3 @@ p2 <-ggplot(case_map_data) +
  (p1|p2)
  #comparing the two maps, I see no difference. It could be a scale issue, or an issue with my code. It may be an issue with my code, becuase I did observe that the ratio by state is different in my table when dividing sum(cases) by sum(deaths). This means that areas that had a lower case/death ratio had more deaths per cases then other states. I just don't know why this trend didn't show up on my graphs. Kinda dissapointed it didn't show up it would've been cool to see :/
 ```
-
-
